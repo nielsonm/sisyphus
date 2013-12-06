@@ -125,6 +125,8 @@
 					};
 					this.options = this.options || $.extend( defaults, options );
 					this.browserStorage = browserStorage;
+          // Check for submit handler.
+          this.timerId = null;
 				},
 
 				/**
@@ -426,10 +428,10 @@
 				saveDataByTimeout: function() {
 					var self = this;
 					var targetForms = self.targets;
-					setTimeout( ( function() {
+					self.timerId = setTimeout( ( function() {
 						function timeout() {
 							self.saveAllData();
-							setTimeout( timeout, self.options.timeout * 1000 );
+							self.timerId = setTimeout( timeout, self.options.timeout * 1000 );
 						}
 						return timeout;
 					} )( targetForms ), self.options.timeout * 1000 );
@@ -476,6 +478,11 @@
 				releaseData: function( targetFormIdAndName, fieldsToProtect ) {
 					var released = false;
 					var self = this;
+          //
+          if (typeof self.timerId == "number") {
+            clearTimeout(self.timerId);
+            delete self.timerId;
+          }
 
 					// Released form, are not started anymore. Fix for ajax loaded forms.
 					params.started[ self.getInstanceIdentifier() ] = false;
